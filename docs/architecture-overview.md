@@ -81,20 +81,35 @@ required to the chain's own path references.
 - A workspace claim is atomic (Go-native equivalent of the old `mkdir`-based
   atomic registry, but without relying on filesystem race semantics as the
   sole safety mechanism).
-- `--workspace` is a mandatory flag everywhere a workspace-scoped operation
-  occurs — there is no default/global fallback. The old silent `00000`
-  workspace fallback is retired permanently; an unspecified workspace is a
-  hard `REJECTED`, not a default.
+- `--workspace` is accepted everywhere a workspace-scoped operation occurs.
+  If omitted, the operation reads `sessions/active` (an explicit,
+  human-set default pointer — set via a `session set-active` operation,
+  not an implicit/silent choice made by the system). If `--workspace` is
+  omitted *and* `sessions/active` doesn't exist or is empty, the operation
+  is a hard `REJECTED`, never a silent guess. This is distinct from the old
+  `00000` legacy-workspace bug (a hardcoded, un-chosen fallback target),
+  which is retired permanently — `00000` (where it exists at all, for
+  migrated-from-flat-layout installs) is inert and deletable like any other
+  workspace, never an implicit target.
 - All paths workspace-scoped from day one — this was a bug class in the old
   implementation (hardcoded `/tmp/` paths, later a `build-task.sh` `SRC` path
   fix) and is treated as a first-class constraint in the Go rewrite rather
   than a patch applied after the fact.
+- Ground-truth runtime paths (from `PROTOCOL-FACTS.md`, not this repo's own
+  earlier scaffold guess): `workspace/<ID>/` for live claimed instances
+  (holding `inbox/tasks/approvals/receipts/logs/locks/files`),
+  `workspace/registry/<ID>/` for the claim registry, `sessions/active` for
+  the default-workspace pointer. This is a *different* top-level directory
+  from `root/workspaces/` (plural, holding `templates/docs/legacy`
+  reference material only) — the two were conflated in this repo's early
+  scaffold and have since been split into `root/workspace/` (singular,
+  live registry) and `root/workspaces/` (plural, reference material).
 
 ## 7. Engine package breakdown (`engine/internal/`)
 
 | Package | Responsibility |
 |---|---|
-| `taskseq` | Sequential task counter, workspace-scoped |
+| `taskseq` | Sequential task counter, global (single shared counter at `$NEXT_STEP_HOME/.task-seq`) — not per-workspace, corrected from an earlier draft; see package doc for why |
 | `registry` | Workspace claim/registry, atomic claim semantics |
 | `task` | Task zip build and validation |
 | `receipt` | Receipt generation, action-plan linkage (locked model: agent sees receipt only) |

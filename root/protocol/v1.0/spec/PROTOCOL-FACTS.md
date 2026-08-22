@@ -23,15 +23,18 @@ External file: `task-<NNN>_<TASK_ID>.zip`
 
 - `<NNN>` — zero-padded sequence number, drawn from the single shared
   `$NEXT_STEP_HOME/.task-seq` counter, incremented atomically. Shared by
-  both build paths (`build-task.sh` and chat-delivery) so numbers never
-  collide. Human-facing convenience only.
+  both build paths (`next-step build-task` and chat-delivery) so numbers
+  never collide. Human-facing convenience only.
 - `<TASK_ID>` — full UUID. This is the real identity. `TASK_ID` inside
   the manifest, the internal `task-<TASK_ID>/` folder name, receipts,
   approvals, and locks are all keyed on the full UUID, never `<NNN>`.
-  `run-task.sh` never validates the outer zip filename against
+  `next-step run-task` never validates the outer zip filename against
   anything.
-- UUID generation: `/proc/sys/kernel/random/uuid` primary. Falls back
-  to a timestamp-based ID only if that path is unavailable.
+- UUID generation: `crypto/rand` (Go standard library), formatted as
+  RFC 4122 v4. The legacy ABX-STEP shell implementation used
+  `/proc/sys/kernel/random/uuid` with a timestamp-based fallback; the Go
+  rewrite's approach is a deliberate simplification (same goal — valid,
+  unique UUIDs — via a single portable primitive), not a behavior gap.
 
 Manifest mandatory fields (both present from Next Step v1.0; inherited
 from legacy ABX-STEP v1.2.0, which added them over ABX-STEP v1.1.0):
@@ -43,19 +46,30 @@ from legacy ABX-STEP v1.2.0, which added them over ABX-STEP v1.1.0):
 
 ## Execution entry point
 
-`protocol/current/run-task.sh --show|--approve|--run <zip>`, optionally
-with `--workspace <ID>` (if omitted, reads `$NEXT_STEP_HOME/sessions/active`).
+`next-step run-task [--show|--approve] <zip>` (no flag = execute + verify).
+Workspace is derived automatically from the zip's own path
+(`workspace/<ID>/tasks/<file>.zip`) — no `--workspace` flag needed for
+`run-task` specifically. `next-step build-task [--workspace <ID>] <TASK_ID>`
+does accept `--workspace`; if omitted, reads
+`$NEXT_STEP_HOME/sessions/active`.
 
-`run-task.sh` is a thin orchestrator with this contract header; actual
-staging logic lives in `runner-stage.sh`, actual execution logic in
-`runner-exec.sh`. Opening `run-task.sh` and this file answers WHAT;
-opening the runner-* files is only needed for HOW.
+**Flag ordering note (Go `flag` package behavior, not a choice):** flags
+must come before the positional `<zip>`/`<TASK_ID>` argument — e.g.
+`next-step run-task --approve --approver "name" <zip>`, not
+`next-step run-task --approve <zip> --approver "name"`. The latter causes
+`--approver` to be parsed as a second positional argument and fail.
+
+`next-step run-task`'s implementation does not split staging and execution
+into separate files the way the retired ABX-STEP shell implementation did
+(`runner-stage.sh`/`runner-exec.sh`) — that split was a shell-specific
+implementation detail. The Go `task` package's `Run` function does both
+directly; see `engine/internal/task/lifecycle.go`.
 
 ## Verification approach
 
 Functional, not just syntactic. Every file in this protocol is tested
 by running real hand-built task packages through the full pipeline
-(`build-task.sh` → `--show` → `--approve` → `--run`), because syntax
+(`next-step build-task` → `next-step run-task --show` → `next-step run-task --approve` → `next-step run-task`), because syntax
 checks alone (`bash -n`) have already been shown to miss real bugs
 (the `LOCK_DIR` scoping regression). Backup-and-verify before any
 destructive step; read-only scans before diagnosing anything.
@@ -81,9 +95,11 @@ consistent across every state file, not just intent.
   non-executable / inert by its own README, but **not exempt** from
   the normal workspace deletion process — it can be deleted like any
   other workspace if the human chooses to.
-- `sessions/active` — the current default workspace ID, read by
-  `run-task.sh`/`build-task.sh` when `--workspace` is omitted. Set via
-  `bin/set-session.sh`.
+- `sessions/active` — the current default workspace ID. `next-step
+  build-task` reads this when `--workspace` is omitted (`next-step
+  run-task` derives its workspace from the zip's own path instead, so it
+  doesn't consult this file). Set via `next-step session set-active
+  --workspace <ID>`.
 - A workspace-escape **snapshot-based** detection approach was
   prototyped and rejected: it doesn't scale (`find`+`stat` over the
   whole `workspace/` tree per run), races under the planned v1.4.0
@@ -127,11 +143,11 @@ Lookup order: `$WORKSPACE_ROOT/hooks/<name>`, then
 `$NEXT_STEP_HOME/hooks/<name>`. If neither exists and is executable,
 the point is a true no-op: returns 0, writes nothing. Confirmed via
 isolated test. When present, hooks are exec'd as a separate process —
-never sourced — with context passed via `ABX_*` env vars.
+never sourced — with context passed via `NEXT_STEP_*` env vars.
 
 This is the intended extension surface for the v1.4.0 multi-agent /
 multi-pipeline concurrent execution model. Do not grow new enforcement
-logic into `run-task.sh`, `runner-stage.sh`, or `runner-exec.sh`
+logic into `next-step run-task`'s implementation (the Go `task` package)
 themselves — real sandboxed enforcement is future scope, delivered via
 system config and these hook points, not core-file logic.
 

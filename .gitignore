@@ -9,7 +9,26 @@ root/workspaces/*/
 !root/workspaces/templates/
 !root/workspaces/docs/
 !root/workspaces/legacy/
-root/workspaces/.task-seq
+
+# Live claimed-workspace instances and the atomic-claim registry (this is
+# distinct from root/workspaces/ above, which holds templates/docs/legacy
+# reference material, not live instances). Ground truth path per
+# root/protocol/v1.0/spec/PROTOCOL-FACTS.md: workspace/<ID>/,
+# workspace/registry/<ID>/.
+root/workspace/*
+!root/workspace/registry/
+root/workspace/registry/*
+!root/workspace/registry/.gitkeep
+
+# Default-workspace pointer file read by run-task.sh/build-task.sh when
+# --workspace is omitted (PROTOCOL-FACTS.md). Pure runtime state.
+root/sessions/active
+
+# Global task sequence counter and its lock file. Ground truth per
+# PROTOCOL-FACTS.md: single shared $NEXT_STEP_HOME/.task-seq, not
+# per-workspace.
+root/.task-seq
+root/.task-seq.lock
 
 root/sessions/runtime/*
 !root/sessions/runtime/.gitkeep

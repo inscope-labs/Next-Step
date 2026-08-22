@@ -28,7 +28,7 @@ pattern:
 
 ```bash
 H="${NEXT_STEP_HOME:-$HOME/next-step}"
-"$H/bin/create-workspace.sh" --name "<name>" --purpose "<purpose>" | "$H/bin/next-step-clipboard.sh"
+"$H/bin/next-step" create-workspace --name "<name>" --purpose "<purpose>" | "$H/bin/next-step-clipboard.sh"
 ```
 
 Read the new `<WORKSPACE_ID>` from its output. If the human gave an
@@ -58,15 +58,16 @@ Fill the scaffold's `.demo` files per its `README.md` substitutions only,
 including `{{WORKSPACE_ID}}`. Follow the manifest fields and command
 sequence already confirmed in State 1 from `protocol/current/spec/PROTOCOL-FACTS.md`
 -- `WORKSPACE_ID`, `WORKSPACE_NAME`, `WRITE_PATHS` in the manifest, then
-`build-task.sh` -> `--show` -> `--approve` -> `--run` -- don't re-derive it,
-don't inspect any script source:
+`next-step build-task` -> `next-step run-task --show` ->
+`next-step run-task --approve` -> `next-step run-task` -- don't re-derive
+it, don't inspect any script source:
 
 ```bash
 H="${NEXT_STEP_HOME:-$HOME/next-step}"
 mkdir -p "$H/workspace/<WORKSPACE_ID>/inbox/task-<TASK_ID>"
 # place the three filled files there, per PROTOCOL-FACTS.md
-"$H/build-task.sh" --workspace <WORKSPACE_ID> <TASK_ID>
-"$H/run-task.sh" --show "$H/workspace/<WORKSPACE_ID>/tasks/task-<NNN>_<TASK_ID>.zip" | "$H/bin/next-step-clipboard.sh"
+"$H/bin/next-step" build-task --workspace <WORKSPACE_ID> <TASK_ID>
+"$H/bin/next-step" run-task --show "$H/workspace/<WORKSPACE_ID>/tasks/task-<NNN>_<TASK_ID>.zip" | "$H/bin/next-step-clipboard.sh"
 ```
 
 ## Step 5 — authorize (human only)
@@ -75,7 +76,7 @@ mkdir -p "$H/workspace/<WORKSPACE_ID>/inbox/task-<TASK_ID>"
 Only you can authorize this — please run:
 
 H="${NEXT_STEP_HOME:-$HOME/next-step}"
-"$H/run-task.sh" --approve "$H/workspace/<WORKSPACE_ID>/tasks/task-<NNN>_<TASK_ID>.zip" | "$H/bin/next-step-clipboard.sh"
+"$H/bin/next-step" run-task --approve "$H/workspace/<WORKSPACE_ID>/tasks/task-<NNN>_<TASK_ID>.zip" | "$H/bin/next-step-clipboard.sh"
 ```
 
 Do not continue until the output confirms it.
@@ -84,7 +85,7 @@ Do not continue until the output confirms it.
 
 ```bash
 H="${NEXT_STEP_HOME:-$HOME/next-step}"
-"$H/run-task.sh" "$H/workspace/<WORKSPACE_ID>/tasks/task-<NNN>_<TASK_ID>.zip" | "$H/bin/next-step-clipboard.sh"
+"$H/bin/next-step" run-task "$H/workspace/<WORKSPACE_ID>/tasks/task-<NNN>_<TASK_ID>.zip" | "$H/bin/next-step-clipboard.sh"
 ```
 
 Read `VERIFICATION: PASS|FAIL` from the printed report. A zero exit code

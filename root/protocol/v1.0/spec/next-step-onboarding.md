@@ -1,13 +1,14 @@
 # next-step-onboarding.md — Next Step Agent Onboarding
 
-> **Provisional command syntax.** This chain still references the legacy
-> shell entry points (`run-task.sh`, `build-task.sh`, `create-workspace.sh`,
-> `runner-stage.sh`, `runner-exec.sh`, `set-session.sh`) verbatim, carried
-> over from ABX-STEP. These will become subcommands of the compiled
-> `next-step` Go binary once Phase 4-5 (engine bootstrap and functional
-> parity build) fixes the actual CLI surface. Do not treat these names as
-> final — update this file and the state files together once that syntax
-> is locked, rather than letting spec and engine drift apart.
+> **CLI syntax finalized at Phase 5.** `run-task.sh`, `build-task.sh`, and
+> `create-workspace.sh` are now subcommands of the compiled `next-step` Go
+> binary: `next-step run-task`, `next-step build-task`,
+> `next-step create-workspace`. `set-session.sh` is now
+> `next-step session set-active`/`show-active`. `runner-stage.sh` and
+> `runner-exec.sh` no longer exist as separate files — that internal split
+> was a shell-implementation detail; the Go `task` package's `Run`
+> function does both directly. See `engine/cmd/next-step/main.go` for the
+> full subcommand reference, or run `next-step --help`.
 
 The user may provide Next Step protocol output from their local device for
 analysis. Read this fully before doing anything else.

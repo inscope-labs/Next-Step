@@ -9,9 +9,9 @@ checks before a task is treated as successfully applied.
 ## 1. Functional, not syntactic
 
 A task is verified by actually running its `start.sh` and `verify.sh`
-through the real pipeline (`build-task.sh` → `--show` → `--approve` →
-`--run` — provisional names, see `next-step-onboarding.md`'s note on CLI
-syntax), not by a syntax check alone. `bash -n` passing proves nothing
+through the real pipeline (`next-step build-task` → `next-step run-task
+--show` → `next-step run-task --approve` → `next-step run-task`), not by
+a syntax check alone. `bash -n` passing proves nothing
 about correctness; it has already missed a real regression (`LOCK_DIR`
 scoping) in the ABX-STEP lineage this protocol inherits from.
 
@@ -54,9 +54,9 @@ failure, independent of whether the underlying write succeeded.
 ## 5. A zero exit code alone is not sufficient
 
 `VERIFICATION: PASS|FAIL` in the printed report is the field that
-determines acceptance. A zero exit code from `run-task.sh`/`verify.sh`
-does not by itself mean the task should be accepted — read the explicit
-`VERIFICATION` field, not just the process exit status.
+determines acceptance. A zero exit code from `next-step run-task`/
+`verify.sh` does not by itself mean the task should be accepted — read
+the explicit `VERIFICATION` field, not just the process exit status.
 
 ## 6. Write-path confinement is checked at manifest-validation time
 

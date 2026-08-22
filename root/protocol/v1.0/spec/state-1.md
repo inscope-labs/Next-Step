@@ -2,7 +2,7 @@
 
 Read the canonical facts sheet found in State 0's `protocol/current/spec/`
 listing — `protocol/current/spec/PROTOCOL-FACTS.md`, using the exact path State 0
-confirmed. Do not read `run-task.sh`/`build-task.sh` source to derive
+confirmed. Do not read the `next-step` binary's source (engine/internal/task/) to derive
 these facts; that file already has them.
 
 ## Command
@@ -41,6 +41,6 @@ cat "$H/protocol/current/spec/state-2.md" | "$H/bin/next-step-clipboard.sh"
 ```
 State 1 FAILED: <PROTOCOL-FACTS.md missing | authorization boundary unclear>.
 Next: 1) confirm protocol/current/spec/PROTOCOL-FACTS.md exists at that path,
-2) if it's missing, ask the human — do not substitute run-task.sh source
+2) if it's missing, ask the human — do not substitute reading the next-step binary's source
    reading for it, 3) do not proceed until unambiguous.
 ```
