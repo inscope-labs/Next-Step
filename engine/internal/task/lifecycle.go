@@ -298,17 +298,50 @@ func extractZip(zipPath, destDir string) error {
 	return nil
 }
 
+// bashCandidates are checked, in order, only as a fallback when bash isn't
+// resolvable via PATH. /bin/bash covers typical Linux hosts; the Termux
+// path covers the documented target environment directly, since Termux
+// has no /bin/bash (Phase 5.5.6 finding — the original hardcoded
+// "/bin/bash" would fail on every real Termux run before ever reaching
+// task logic).
+var bashCandidates = []string{
+	"/bin/bash",
+	"/usr/bin/bash",
+	"/data/data/com.termux/files/usr/bin/bash", // Termux's actual bash location
+}
+
+// resolveBash finds a usable bash interpreter. Prefers PATH resolution
+// (correct on both a normal Linux host and Termux, where bash lives at
+// $PREFIX/bin/bash and $PREFIX is on PATH) and only falls back to a fixed
+// list of absolute paths if PATH resolution fails — e.g. a stripped-down
+// invocation environment where PATH wasn't inherited as expected.
+func resolveBash() (string, error) {
+	if p, err := exec.LookPath("bash"); err == nil {
+		return p, nil
+	}
+	for _, c := range bashCandidates {
+		if info, err := os.Stat(c); err == nil && !info.IsDir() {
+			return c, nil
+		}
+	}
+	return "", fmt.Errorf("no usable bash found on PATH or at any known fallback location (%s)", strings.Join(bashCandidates, ", "))
+}
+
 func runScript(path, dir string, env []string) (string, error) {
 	if _, err := os.Stat(path); err != nil {
 		return "", fmt.Errorf("script not found: %w", err)
 	}
-	cmd := exec.Command("/bin/bash", path)
+	bash, err := resolveBash()
+	if err != nil {
+		return "", err
+	}
+	cmd := exec.Command(bash, path)
 	cmd.Dir = dir
 	cmd.Env = env
 	var buf bytes.Buffer
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf
-	err := cmd.Run()
+	err = cmd.Run()
 	return buf.String(), err
 }
 

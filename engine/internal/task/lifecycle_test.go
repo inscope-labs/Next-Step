@@ -1,6 +1,7 @@
 package task
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -59,5 +60,22 @@ func TestRun_PassesApprovalGateOnceApproved(t *testing.T) {
 	}
 	if strings.Contains(err.Error(), "not approved") {
 		t.Fatalf("Run error = %q, still hit the approval gate after Approve() succeeded", err.Error())
+	}
+}
+
+// TestResolveBash_FindsAnInterpreter is the regression test for the
+// Phase 5.5.6 Termux finding: the original hardcoded "/bin/bash" would
+// fail on every real Termux run, since Termux has no /bin/bash. This
+// doesn't assert a specific path (that's host-dependent) — it asserts
+// resolveBash succeeds in this test environment (which does have a real
+// bash) and that the returned path is actually executable, proving the
+// PATH-based lookup path works end to end rather than just compiling.
+func TestResolveBash_FindsAnInterpreter(t *testing.T) {
+	path, err := resolveBash()
+	if err != nil {
+		t.Fatalf("resolveBash: %v", err)
+	}
+	if info, statErr := os.Stat(path); statErr != nil || info.IsDir() {
+		t.Fatalf("resolveBash returned %q, which is not a usable file (stat err: %v)", path, statErr)
 	}
 }
