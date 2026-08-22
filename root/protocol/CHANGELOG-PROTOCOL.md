@@ -115,3 +115,15 @@ Still open, explicitly not resolved this phase:
   sandboxed environment (extended to also check true no-op hook behavior
   end-to-end and full ledger correctness across a run/rerun pair) but
   still needs to be run on actual hardware before this item closes.
+
+## [1.0] — Phase 5.5.0.5 correction: target platform is linux/arm, not linux/arm64
+
+The build plan's Phase 0 platform-matrix question assumed `linux/arm64`
+for Termux on Android; the Phase 5.5 addendum above initially carried
+that assumption forward unverified. Corrected per the architect: the
+actual device is a 32-bit Termux install (`armeabi-v7a`), so the real
+cross-compile target for Phase 5.5.6 is `GOOS=linux GOARCH=arm GOARM=7`,
+not `arm64`/`aarch64`. Verified this target builds cleanly (static,
+stdlib-only, no CGO) — the engine has no architecture-specific code path,
+so this correction has no functional impact beyond which binary gets
+placed on the device in 5.5.6.
