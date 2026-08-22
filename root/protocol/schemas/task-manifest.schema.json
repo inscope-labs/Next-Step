@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inscope-labs/Next-Step/root/protocol/schemas/task-manifest.schema.json",
+  "title": "Next Step Task Manifest",
+  "description": "Structure of a task zip's manifest. Fields formalized from the real ABX-STEP v1.2.0 manifest contract (PROTOCOL-FACTS.md, task.manifest.demo) — this is a direct port of an existing, exercised format, not a new design.",
+  "type": "object",
+  "required": [
+    "PROTOCOL_VERSION",
+    "TASK_ID",
+    "TASK_VERSION",
+    "CREATED_AT",
+    "CREATED_BY",
+    "WORKSPACE_ID",
+    "WORKSPACE_NAME",
+    "TASK_INTENT",
+    "TASK_CONTENT_HASH",
+    "WRITE_PATHS",
+    "IDEMPOTENCY_MODE",
+    "EXECUTION_CONTEXT",
+    "ALLOW_NETWORK",
+    "ALLOW_DESTRUCTIVE",
+    "ALLOW_REMOTE_EXEC",
+    "ALLOW_PRIVILEGED",
+    "ALLOW_CREDENTIAL_ACCESS",
+    "ALLOW_PROCESS_CONTROL",
+    "REQUIRE_CLEAN_WORKING_DIR",
+    "INTERRUPTION_POLICY"
+  ],
+  "properties": {
+    "PROTOCOL_VERSION": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Next Step protocol version this manifest conforms to."
+    },
+    "TASK_ID": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Full UUID. The real identity of the task — receipts, approvals, and locks are keyed on this, never on the human-facing sequence number."
+    },
+    "TASK_VERSION": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "CREATED_AT": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp, YYYY-MM-DDTHH:MM:SSZ."
+    },
+    "CREATED_BY": {
+      "type": "string",
+      "description": "Identity of the creating agent (e.g. 'AI', or a specific agent identifier)."
+    },
+    "WORKSPACE_ID": {
+      "type": "string",
+      "description": "The claiming workspace's ID. Must correspond to an existing entry under workspace/registry/."
+    },
+    "WORKSPACE_NAME": {
+      "type": "string",
+      "description": "Not hand-authored — looked up from workspace/registry/<WORKSPACE_ID>/name and injected at build time. Present here because it is a mandatory field of the built manifest, even though it is not a template substitution."
+    },
+    "TASK_INTENT": {
+      "type": "string",
+      "description": "Human-readable description of what this task does."
+    },
+    "TASK_CONTENT_HASH": {
+      "type": "string",
+      "description": "Hash binding this manifest to its task contents. 'PENDING' is a valid pre-build placeholder value; must be a real hash by the time the task is staged."
+    },
+    "WRITE_PATHS": {
+      "type": "string",
+      "description": "Comma-separated relative write paths, or the literal string 'NONE'. Any path resolving outside the claiming workspace's root (absolute path, '..', '~') is rejected at manifest-validation time, before staging."
+    },
+    "IDEMPOTENCY_MODE": {
+      "type": "string",
+      "enum": ["SAFE"],
+      "description": "Only SAFE is defined in the inherited contract; task authors must write start.sh to be safely re-runnable."
+    },
+    "EXECUTION_CONTEXT": {
+      "type": "string",
+      "description": "Target execution environment, e.g. ANDROID_TERMUX_HOME."
+    },
+    "ALLOW_NETWORK": { "type": "boolean" },
+    "ALLOW_DESTRUCTIVE": { "type": "boolean" },
+    "ALLOW_REMOTE_EXEC": { "type": "boolean" },
+    "ALLOW_PRIVILEGED": { "type": "boolean" },
+    "ALLOW_CREDENTIAL_ACCESS": { "type": "boolean" },
+    "ALLOW_PROCESS_CONTROL": { "type": "boolean" },
+    "REQUIRE_CLEAN_WORKING_DIR": { "type": "boolean" },
+    "INTERRUPTION_POLICY": {
+      "type": "string",
+      "enum": ["SAFE_TO_INTERRUPT_ANY_POINT"],
+      "description": "Only this value is attested in the inherited contract; other interruption policies are not yet defined."
+    }
+  },
+  "additionalProperties": false
+}

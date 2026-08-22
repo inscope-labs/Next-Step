@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+TARGET="$NEXT_STEP_WORKSPACE_ROOT/files/next-step-onboarding-demo.txt"
+CONTENT="{{SCOPE_CONTENT}}"
+
+[ -f "$TARGET" ] || { echo "[FAIL] $TARGET missing"; exit 1; }
+if [ "$(cat "$TARGET")" = "$CONTENT" ]; then
+  echo "[PASS] content matches"
+else
+  echo "[FAIL] content mismatch"
+  exit 1
+fi

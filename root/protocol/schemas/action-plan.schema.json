@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inscope-labs/Next-Step/root/protocol/schemas/action-plan.schema.json",
+  "title": "Next Step Action Plan",
+  "description": "NEW at Next Step v1.0 — the broad, reusable roadmap document that a receipt (receipt.schema.json) links a single task to. Contains one or more tasks. Not scoped to a single agent or session. The AI agent building a task never sees this document directly — only the narrower receipt derived from it. Design formalization, not yet exercised against a real implementation.",
+  "type": "object",
+  "required": [
+    "action_plan_id",
+    "title",
+    "created_at",
+    "created_by",
+    "tasks",
+    "status"
+  ],
+  "properties": {
+    "action_plan_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "title": {
+      "type": "string",
+      "description": "Short human-readable name for the plan."
+    },
+    "description": {
+      "type": "string",
+      "description": "Full description of the plan's overall goal and boundaries — the scope that individual tasks' receipts are validated against."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Identity of the human or process that authored this plan. An action plan is a human-authorized artifact, consistent with the protocol's human-only authorization model."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Optional. If the plan is scoped to a single workspace; omit if it spans multiple."
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "description": "One or more planned task entries. Each entry describes a task's intended scope before it is built — not the built task.manifest itself.",
+      "items": {
+        "type": "object",
+        "required": ["plan_task_id", "intent", "status"],
+        "properties": {
+          "plan_task_id": {
+            "type": "string",
+            "description": "Identity of this task-slot within the plan. Distinct from any built TASK_ID — a plan task may be rebuilt multiple times before a receipt is finalized."
+          },
+          "intent": {
+            "type": "string",
+            "description": "What this task within the plan is meant to accomplish."
+          },
+          "scope_boundary": {
+            "type": "string",
+            "description": "The explicit scope boundary the staging pipeline will validate a submitted receipt against for this task-slot."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["NOT_STARTED", "TASK_SUBMITTED", "COMPLETE"],
+            "description": "Tracked at the plan level, independent of the individual receipt's own status field."
+          },
+          "receipt_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Set once a task has been built and a receipt generated for this slot. Optional/absent until then."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ACTIVE", "COMPLETE", "ABANDONED"],
+      "description": "Overall plan status. A plan can remain ACTIVE with some tasks COMPLETE and others NOT_STARTED — it is a reusable roadmap, not a single-shot document."
+    }
+  },
+  "additionalProperties": false
+}

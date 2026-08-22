@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inscope-labs/Next-Step/root/protocol/schemas/receipt.schema.json",
+  "title": "Next Step Task Receipt",
+  "description": "NEW at Next Step v1.0 — formalizes the locked task/receipt/action-plan object model, which has no direct ABX-STEP predecessor to port from. A receipt links exactly one zipped task to its declared scope and to its parent action plan. The submitting agent sees only this document, never the parent action plan. This schema is a design formalization, not yet exercised against a real implementation — expect revision once the staging pipeline (Phase 5) is built and tested against it.",
+  "type": "object",
+  "required": [
+    "receipt_id",
+    "task_id",
+    "task_content_hash",
+    "workspace_id",
+    "parent_action_plan_id",
+    "scope",
+    "created_at",
+    "status"
+  ],
+  "properties": {
+    "receipt_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identity of the receipt itself, distinct from task_id."
+    },
+    "task_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The TASK_ID of the single zipped task this receipt covers. One receipt, one task — never a batch."
+    },
+    "task_content_hash": {
+      "type": "string",
+      "description": "Must match TASK_CONTENT_HASH from the referenced task's manifest, once that manifest is finalized (no longer 'PENDING')."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "The workspace this task was built and will execute within."
+    },
+    "parent_action_plan_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "References the broader action plan this task is one part of. The submitting agent never sees the action plan document itself — only this reference exists in the agent-visible receipt."
+    },
+    "scope": {
+      "type": "string",
+      "description": "The declared scope of this specific task, as validated against the parent action plan by the staging pipeline. Human-readable, not free-form re-interpretation of the action plan."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PENDING_REVIEW", "SCOPE_APPROVED", "SCOPE_REJECTED"],
+      "description": "Set by the staging pipeline's human-reviewed scope-compliance check — never by the submitting agent. A receipt existing does not imply the agent has validated its own scope compliance."
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Identity of the human reviewer, once status leaves PENDING_REVIEW. Optional/absent while still pending."
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional/absent while still pending."
+    }
+  },
+  "additionalProperties": false
+}
