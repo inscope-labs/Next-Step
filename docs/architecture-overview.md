@@ -112,7 +112,9 @@ required to the chain's own path references.
 | `taskseq` | Sequential task counter, global (single shared counter at `$NEXT_STEP_HOME/.task-seq`) — not per-workspace, corrected from an earlier draft; see package doc for why |
 | `registry` | Workspace claim/registry, atomic claim semantics |
 | `task` | Task zip build and validation |
-| `receipt` | Receipt generation, action-plan linkage (locked model: agent sees receipt only) |
+| `receipt` | Pre-execution receipt generation, action-plan linkage (locked model: agent sees receipt only) |
+| `ledger` | Added Phase 5.5.4. Post-execution execution-state record per task (attempt/execution counts, last verification, content hash over that state) — the artifact the retired ABX-STEP lineage also called a "receipt." Distinct from `receipt`; see §9 |
+| `hooks` | Added Phase 5.5.2. Four-point (`INGRESS`/`PRE_EXECUTE`/`POST_EXECUTE`/`EGRESS`) lookup/exec mechanism, wired into `task.Run`. No bundled scripts — true no-op until a human installs one |
 | `fsm` | Onboarding state chain (state-0 → state-3 for v1.0; fuller state-machine engine is a later minor version) |
 | `sandbox` | Ephemeral sandboxed execution primitives (stubbed structurally in v1.0, not functional) |
 
@@ -134,6 +136,21 @@ is available.
   agent zips the task; `next-step` generates the receipt; a staging pipeline
   with human review validates scope compliance. The submitting agent never
   validates its own scope compliance.
+- **This "receipt" is a pre-execution artifact, distinct from the
+  execution ledger.** Phase 5.5.0.2/5.5.4 resolved a naming collision
+  inherited loosely from the ABX-STEP lineage: that lineage's own
+  "receipt" was a *post-execution* execution-state record (attempt/
+  execution counts, last verification, a content hash over that state),
+  written after every `run-task` attempt — a genuinely different artifact
+  from the pre-execution scope-authorization document described above.
+  The old concept is carried forward as `engine/internal/ledger`, kept
+  deliberately separate rather than merged into `receipt.schema.json`, so
+  "receipt" in this document always means the scope/action-plan artifact.
+  `PROTOCOL-FACTS.md`'s `EGRESS` hook — documented as firing "after the
+  receipt is committed" — resolves to the ledger entry being committed,
+  since that is the artifact tied to a specific `run-task` execution; the
+  pre-execution receipt is generated earlier in the flow and isn't
+  re-committed at `run-task` time.
 
 ## 10. Distribution and runtime separation
 
@@ -159,6 +176,15 @@ exist) but are not functionally required for v1.0:
 - Ephemeral sandboxed task execution (`next-step-runner` real logic)
 - The fuller FSM engine (only the linear onboarding chain ships in v1.0)
 - Session isolation enforcement
+- Real write-time enforcement of `WRITE_PATHS` and `LINKS` (both are
+  lexical, trusted-contract checks only — see PROTOCOL-FACTS.md's
+  Link/capability caveat)
+- Actual hook scripts for any of the four extension points (the
+  lookup/exec mechanism is implemented and wired in as of Phase 5.5.2;
+  no scripts ship with this repo)
+- The "chat-delivery" build path named in PROTOCOL-FACTS.md's Task
+  package format section — undocumented beyond that one line, open per
+  Phase 5.5.0.1
 
 These are consistent with how sandboxing was already flagged as a
 v1.2.2+-class feature under the old ABX-STEP numbering, and their build-out

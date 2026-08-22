@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/inscope-labs/Next-Step/root/protocol/schemas/receipt.schema.json",
   "title": "Next Step Task Receipt",
-  "description": "NEW at Next Step v1.0 — formalizes the locked task/receipt/action-plan object model, which has no direct ABX-STEP predecessor to port from. A receipt links exactly one zipped task to its declared scope and to its parent action plan. The submitting agent sees only this document, never the parent action plan. This schema is a design formalization, not yet exercised against a real implementation — expect revision once the staging pipeline (Phase 5) is built and tested against it.",
+  "description": "NEW at Next Step v1.0 — formalizes the locked task/receipt/action-plan object model. A receipt links exactly one zipped task to its declared scope and to its parent action plan. The submitting agent sees only this document, never the parent action plan. Phase 5.5.0.2 correction: an earlier draft of this description claimed this had 'no direct ABX-STEP predecessor,' which was inaccurate — ABX-STEP v1.2.0 did have an artifact it called a receipt, but that was a different, post-execution execution-state record (attempt/execution counts, last verification, a content hash over that state), now ported forward as engine/internal/ledger, not this schema. This receipt is genuinely new: a pre-execution scope-authorization document with no ABX-STEP equivalent. See root/protocol/v1.0/spec/PROTOCOL-FACTS.md's EGRESS hook note and root/protocol/CHANGELOG-PROTOCOL.md's Phase 5.5 addendum for the full reconciliation.",
   "type": "object",
   "required": [
     "receipt_id",

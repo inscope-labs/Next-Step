@@ -24,7 +24,12 @@ External file: `task-<NNN>_<TASK_ID>.zip`
 - `<NNN>` — zero-padded sequence number, drawn from the single shared
   `$NEXT_STEP_HOME/.task-seq` counter, incremented atomically. Shared by
   both build paths (`next-step build-task` and chat-delivery) so numbers
-  never collide. Human-facing convenience only.
+  never collide. Human-facing convenience only. **Open item (Phase
+  5.5.0.1, unresolved):** "chat-delivery" as a build path is named here
+  but not implemented or otherwise described anywhere in this codebase —
+  no script, state file, or hook references it beyond this one line.
+  Pending confirmation of what it actually was in the real v1.2.0 system
+  before it can be built or formally retired.
 - `<TASK_ID>` — full UUID. This is the real identity. `TASK_ID` inside
   the manifest, the internal `task-<TASK_ID>/` folder name, receipts,
   approvals, and locks are all keyed on the full UUID, never `<NNN>`.
@@ -108,8 +113,15 @@ consistent across every state file, not just intent.
 
 ## Path enforcement rule
 
-- Read access: allowed globally against shared/global assets, e.g.
-  `protocol/current/templates/*`.
+- Read access: allowed globally against shared/global assets under
+  `protocol/current/`. As of v1.0 that means `protocol/current/spec/`
+  (including `spec/demo/`) and `protocol/current/schemas/` — there is no
+  separate populated `templates/` directory; `demo/` is the whole of the
+  reference-asset set migrated from the ABX-STEP lineage. An earlier draft
+  of this document referenced `protocol/current/templates/*` as if it were
+  a distinct, larger asset set; that path exists on disk but is empty, and
+  the reference has been corrected here rather than backfilled with new
+  content that was never part of the real v1.2.0 install.
 - Write access: confined to `workspace/<ID>/` root. Any `WRITE_PATHS`
   entry that resolves outside the claiming workspace's root — absolute
   path, `..`, `~` — is rejected at manifest-validation time, before
@@ -127,6 +139,15 @@ outside its declared paths at runtime. Real write-time confinement is
 explicitly out of scope for Next Step v1.0 (as it was for legacy
 ABX-STEP v1.2.0) and remains future work.
 
+Implemented as of Phase 5.5.3: the `LINKS` manifest field (optional,
+comma-separated `TARGET_WORKSPACE_ID:MODE` entries, or `NONE`/absent) and
+`engine/internal/task`'s `ValidateLinks`, built to the same standard as
+`WRITE_PATHS` — lexical checking only, run at `Build` time alongside
+`WRITE_PATHS` validation. `MODE` is one of `read-only`, `write-once`,
+`time-bounded`; a link targeting the declaring task's own workspace, an
+unclaimed workspace, or an unrecognized mode is rejected before the zip
+is ever built.
+
 ## Hook / gate architecture
 
 Four named extension points, all no-op unless the corresponding file
@@ -139,11 +160,25 @@ exists and is executable:
 | `POST_EXECUTE` | hook | after `start.sh` runs | no (observational) |
 | `EGRESS` | hook | after the receipt is committed | no — receipt is already truth on disk |
 
+**"The receipt" EGRESS fires after (Phase 5.5.0.2/5.5.4 resolution):**
+this resolves to `engine/internal/ledger`'s per-task execution record —
+the post-execution artifact the retired ABX-STEP lineage also called a
+"receipt" — not `engine/internal/receipt`'s pre-execution
+task/receipt/action-plan scope document. The two are genuinely different
+artifacts that happened to share a name in the old lineage; see
+`docs/architecture-overview.md` §9 and `root/protocol/CHANGELOG-PROTOCOL.md`'s
+Phase 5.5 addendum for the full reconciliation.
+
 Lookup order: `$WORKSPACE_ROOT/hooks/<name>`, then
 `$NEXT_STEP_HOME/hooks/<name>`. If neither exists and is executable,
 the point is a true no-op: returns 0, writes nothing. Confirmed via
-isolated test. When present, hooks are exec'd as a separate process —
-never sourced — with context passed via `NEXT_STEP_*` env vars.
+isolated test (`engine/internal/hooks`, `engine/internal/task`'s
+end-to-end smoke test). When present, hooks are exec'd as a separate
+process — never sourced — with context passed via `NEXT_STEP_*` env
+vars. Implemented as of Phase 5.5.2: `engine/internal/hooks` provides the
+lookup/exec mechanism, wired into all four points in
+`engine/internal/task/lifecycle.go`'s `Run`. No hook scripts ship with
+this repo — every point remains a true no-op until a human installs one.
 
 This is the intended extension surface for the v1.4.0 multi-agent /
 multi-pipeline concurrent execution model. Do not grow new enforcement

@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/inscope-labs/next-step/engine/internal/hooks"
+	"github.com/inscope-labs/next-step/engine/internal/ledger"
 	"github.com/inscope-labs/next-step/engine/internal/registry"
 )
 
@@ -147,6 +149,17 @@ func Run(home, workspaceID, zipPath string) (Report, error) {
 	}
 
 	wsRoot := registry.Root(home, workspaceID)
+	baseEnv := map[string]string{
+		"NEXT_STEP_ZIP_PATH": zipPath,
+	}
+
+	// INGRESS: gate, fires before staging. Can block — a non-zero exit
+	// here (only if a hook is actually installed; true no-op otherwise)
+	// stops the run before the zip is even extracted.
+	if _, err := hooks.FireBlocking(home, wsRoot, hooks.Ingress, baseEnv); err != nil {
+		return Report{}, err
+	}
+
 	tmpDir, err := os.MkdirTemp("", "next-step-run-*")
 	if err != nil {
 		return Report{}, fmt.Errorf("creating scratch dir: %w", err)
@@ -161,17 +174,29 @@ func Run(home, workspaceID, zipPath string) (Report, error) {
 	if err != nil {
 		return Report{}, fmt.Errorf("re-validating manifest at run time: %w", err)
 	}
+	baseEnv["NEXT_STEP_TASK_ID"] = m.TaskID
 
 	env := append(os.Environ(),
 		"NEXT_STEP_HOME="+home,
 		"NEXT_STEP_WORKSPACE_ROOT="+wsRoot,
 	)
 
+	// PRE_EXECUTE: gate, fires before start.sh runs. Can block.
+	if _, err := hooks.FireBlocking(home, wsRoot, hooks.PreExecute, baseEnv); err != nil {
+		return Report{}, err
+	}
+
 	startOut, startErr := runScript(filepath.Join(tmpDir, "start.sh"), tmpDir, env)
 	execution := parseResultLine(startOut)
 	if execution == "" {
 		execution = "UNKNOWN"
 	}
+
+	// POST_EXECUTE: hook, fires after start.sh runs. Observational only
+	// — its result is not allowed to change the run's outcome, per the
+	// "Can block?" column. A failing installed hook here is folded into
+	// the log tail, not treated as a run failure.
+	postResult := hooks.Fire(home, wsRoot, hooks.PostExecute, baseEnv)
 
 	verifyOut, verifyErr := runScript(filepath.Join(tmpDir, "verify.sh"), tmpDir, env)
 	verification := "FAIL"
@@ -188,6 +213,9 @@ func Run(home, workspaceID, zipPath string) (Report, error) {
 	}
 	if verifyErr != nil {
 		logTail += fmt.Sprintf("\n[verify.sh exited non-zero: %v]", verifyErr)
+	}
+	if postResult.Ran && postResult.Err != nil {
+		logTail += fmt.Sprintf("\n[POST_EXECUTE hook exited non-zero (observational, non-blocking): %v]", postResult.Err)
 	}
 
 	attemptCount, executionCount, err := bumpCounters(wsRoot, filepath.Base(zipPath), execution == "APPLIED")
@@ -207,6 +235,36 @@ func Run(home, workspaceID, zipPath string) (Report, error) {
 	if err := appendLog(wsRoot, filepath.Base(zipPath), report); err != nil {
 		return report, fmt.Errorf("run completed but writing log failed: %w", err)
 	}
+
+	// The execution ledger is "the receipt" EGRESS fires after — see
+	// engine/internal/ledger's package doc for why that resolves to this
+	// artifact and not engine/internal/receipt's pre-execution one.
+	ledgerExecState := ledger.StateUnknown
+	switch execution {
+	case "APPLIED":
+		ledgerExecState = ledger.StateApplied
+	case "NOOP":
+		ledgerExecState = ledger.StateNoop
+	}
+	ledgerVerification := ledger.VerificationFail
+	if verification == "PASS" {
+		ledgerVerification = ledger.VerificationPass
+	}
+	if _, err := ledger.Commit(home, workspaceID, m.TaskID, m.TaskContentHash, ledgerExecState, ledgerVerification, execution == "APPLIED"); err != nil {
+		return report, fmt.Errorf("run completed but committing the execution ledger failed: %w", err)
+	}
+
+	// EGRESS: hook, fires after the receipt (ledger entry) is committed.
+	// Observational only — cannot block or alter a run that already
+	// completed and was already logged.
+	egressResult := hooks.Fire(home, wsRoot, hooks.Egress, baseEnv)
+	if egressResult.Ran && egressResult.Err != nil {
+		// Non-fatal: the run and its ledger entry are already truth on
+		// disk (PROTOCOL-FACTS.md's own phrasing), so a failing EGRESS
+		// hook is reported, not escalated into a Run error.
+		report.LogTail += fmt.Sprintf("\n[EGRESS hook exited non-zero (observational, non-blocking): %v]", egressResult.Err)
+	}
+
 	return report, nil
 }
 

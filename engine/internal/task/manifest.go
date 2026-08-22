@@ -57,6 +57,7 @@ type Manifest struct {
 	AllowProcessControl    bool
 	RequireCleanWorkingDir bool
 	InterruptionPolicy     string
+	Links                  string // comma-separated LINKS entries, or "NONE"/absent — see ValidateLinks
 }
 
 var requiredFields = []string{
@@ -133,6 +134,7 @@ func ParseManifest(path string) (Manifest, error) {
 		IdempotencyMode:    fields["IDEMPOTENCY_MODE"],
 		ExecutionContext:   fields["EXECUTION_CONTEXT"],
 		InterruptionPolicy: fields["INTERRUPTION_POLICY"],
+		Links:              linksOrDefault(fields["LINKS"]),
 	}
 	boolFields["ALLOW_NETWORK"] = &m.AllowNetwork
 	boolFields["ALLOW_DESTRUCTIVE"] = &m.AllowDestructive
@@ -176,6 +178,63 @@ func ValidateWritePaths(writePaths string) error {
 		cleaned := filepath.Clean(p)
 		if cleaned == ".." || strings.HasPrefix(cleaned, "../") {
 			return fmt.Errorf("WRITE_PATHS entry %q escapes the workspace root", p)
+		}
+	}
+	return nil
+}
+
+// linksOrDefault returns the LINKS field value, defaulting to "NONE" when
+// the field is absent — LINKS is optional (added at Phase 5.5.3, not part
+// of the mandatory field set inherited from ABX-STEP v1.2.0), so existing
+// manifests without it (e.g. demo/task.manifest.demo) remain valid.
+func linksOrDefault(raw string) string {
+	if raw == "" {
+		return "NONE"
+	}
+	return raw
+}
+
+// validLinkModes are the only link modes documented in PROTOCOL-FACTS.md's
+// Link/capability caveat: read-only, write-once, time-bounded. No other
+// mode is invented here.
+var validLinkModes = map[string]bool{
+	"read-only":    true,
+	"write-once":   true,
+	"time-bounded": true,
+}
+
+// ValidateLinks enforces the same enforcement level already documented and
+// already built for WRITE_PATHS: pure lexical string-checking at
+// manifest-validation time, NOT kernel-level or filesystem-level
+// enforcement (PROTOCOL-FACTS.md's Link/capability caveat). Each entry is
+// "TARGET_WORKSPACE_ID:MODE", comma-separated, or the literal "NONE".
+// TARGET_WORKSPACE_ID must be a claimed workspace, distinct from the
+// declaring task's own workspace (a link to yourself is not a link).
+func ValidateLinks(writingWorkspaceID, links string, workspaceExists func(id string) bool) error {
+	if links == "" || links == "NONE" {
+		return nil
+	}
+	for _, entry := range strings.Split(links, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			return fmt.Errorf("LINKS contains an empty entry")
+		}
+		parts := strings.SplitN(entry, ":", 2)
+		if len(parts) != 2 {
+			return fmt.Errorf("LINKS entry %q is not TARGET_WORKSPACE_ID:MODE", entry)
+		}
+		targetID, mode := strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1])
+		if targetID == "" {
+			return fmt.Errorf("LINKS entry %q has an empty target workspace ID", entry)
+		}
+		if targetID == writingWorkspaceID {
+			return fmt.Errorf("LINKS entry %q targets the declaring task's own workspace; a link to yourself is not a link", entry)
+		}
+		if !validLinkModes[mode] {
+			return fmt.Errorf("LINKS entry %q has unrecognized mode %q (must be read-only, write-once, or time-bounded)", entry, mode)
+		}
+		if workspaceExists != nil && !workspaceExists(targetID) {
+			return fmt.Errorf("LINKS entry %q targets workspace %q, which is not claimed", entry, targetID)
 		}
 	}
 	return nil

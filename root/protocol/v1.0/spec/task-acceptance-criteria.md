@@ -68,6 +68,17 @@ This is a pre-condition for acceptance, not a runtime check — see
 the important limits of what this actually guarantees (lexical
 string-checking, not kernel-level enforcement).
 
+## 6a. Inter-workspace links are checked the same way, when declared
+
+Added at Phase 5.5.3. `LINKS` entries (`TARGET_WORKSPACE_ID:MODE`,
+comma-separated, or `NONE`/absent) are validated lexically at the same
+point as `WRITE_PATHS` — at manifest-validation time, before `--show`.
+Same caveat applies: this is string-checking, not kernel/filesystem
+enforcement (`PROTOCOL-FACTS.md`'s Link/capability caveat). A task with no
+`LINKS` field at all is unaffected — the field is optional and defaults
+to `NONE`, so this criterion only applies when a task actually declares a
+link.
+
 ## 7. Human authorization is a precondition, not a verification step
 
 No amount of passing `verify.sh` output substitutes for the human's

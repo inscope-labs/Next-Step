@@ -73,6 +73,9 @@ func Build(home, workspaceID, taskID string) (BuildResult, error) {
 	if err := ValidateWritePaths(m.WritePaths); err != nil {
 		return BuildResult{}, fmt.Errorf("WRITE_PATHS validation failed: %w", err)
 	}
+	if err := ValidateLinks(m.WorkspaceID, m.Links, func(id string) bool { return registry.Exists(home, id) }); err != nil {
+		return BuildResult{}, fmt.Errorf("LINKS validation failed: %w", err)
+	}
 
 	hash, err := contentHash(manifestPath, startPath, verifyPath)
 	if err != nil {

@@ -90,6 +90,10 @@
       "type": "string",
       "enum": ["SAFE_TO_INTERRUPT_ANY_POINT"],
       "description": "Only this value is attested in the inherited contract; other interruption policies are not yet defined."
+    },
+    "LINKS": {
+      "type": "string",
+      "description": "Added at Phase 5.5.3. Optional; comma-separated TARGET_WORKSPACE_ID:MODE entries, or the literal string 'NONE'. Absent is equivalent to 'NONE' (backward-compatible with manifests built before this field existed). MODE is one of read-only, write-once, time-bounded (PROTOCOL-FACTS.md's Link/capability caveat). Validated by pure lexical string-checking at manifest-validation time, at the same enforcement level as WRITE_PATHS — not kernel-level or filesystem-level enforcement. A target equal to the declaring task's own WORKSPACE_ID, or an unclaimed target workspace, is rejected."
     }
   },
   "additionalProperties": false
