@@ -12,6 +12,7 @@ root/workspaces/*/
 root/workspaces/.task-seq
 
 root/sessions/runtime/*
+!root/sessions/runtime/.gitkeep
 !root/sessions/runtime/Dockerfile.scratch
 !root/sessions/runtime/sandbox-profile.json
 root/sessions/entrypoint/*
