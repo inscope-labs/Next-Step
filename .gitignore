@@ -1,0 +1,22 @@
+# Go build artifacts
+/engine/bin/
+*.exe
+*.test
+*.out
+
+# Runtime-generated content — never commit live workspace or session state
+root/workspaces/*/
+!root/workspaces/templates/
+!root/workspaces/docs/
+!root/workspaces/legacy/
+root/workspaces/.task-seq
+
+root/sessions/runtime/*
+!root/sessions/runtime/Dockerfile.scratch
+!root/sessions/runtime/sandbox-profile.json
+root/sessions/entrypoint/*
+!root/sessions/entrypoint/.gitkeep
+
+# OS / editor cruft
+.DS_Store
+*.swp
