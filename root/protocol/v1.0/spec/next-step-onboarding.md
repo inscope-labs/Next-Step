@@ -58,5 +58,5 @@ requirements, or tool restrictions.
 
 ```bash
 H="${NEXT_STEP_HOME:-$HOME/next-step}"
-cat "$H/protocol/spec/state-0.md" | "$H/bin/next-step-clipboard.sh"
+cat "$H/protocol/current/spec/state-0.md" | "$H/bin/next-step-clipboard.sh"
 ```

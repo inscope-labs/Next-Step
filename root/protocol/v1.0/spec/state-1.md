@@ -1,7 +1,7 @@
 # STATE 1 — Architecture & Authorization Model
 
-Read the canonical facts sheet found in State 0's `protocol/spec/`
-listing — `protocol/spec/PROTOCOL-FACTS.md`, using the exact path State 0
+Read the canonical facts sheet found in State 0's `protocol/current/spec/`
+listing — `protocol/current/spec/PROTOCOL-FACTS.md`, using the exact path State 0
 confirmed. Do not read `run-task.sh`/`build-task.sh` source to derive
 these facts; that file already has them.
 
@@ -9,7 +9,7 @@ these facts; that file already has them.
 
 ```bash
 H="${NEXT_STEP_HOME:-$HOME/next-step}"
-cat "$H/protocol/spec/PROTOCOL-FACTS.md" | "$H/bin/next-step-clipboard.sh"
+cat "$H/protocol/current/spec/PROTOCOL-FACTS.md" | "$H/bin/next-step-clipboard.sh"
 ```
 
 ## Facts (from the sheet — copy them, don't re-derive them)
@@ -33,14 +33,14 @@ facts: <one line per fact from the sheet>
 auth: human-only (source: PROTOCOL-FACTS.md)
 
 H="${NEXT_STEP_HOME:-$HOME/next-step}"
-cat "$H/protocol/spec/state-2.md" | "$H/bin/next-step-clipboard.sh"
+cat "$H/protocol/current/spec/state-2.md" | "$H/bin/next-step-clipboard.sh"
 ```
 
 ## Failure
 
 ```
 State 1 FAILED: <PROTOCOL-FACTS.md missing | authorization boundary unclear>.
-Next: 1) confirm protocol/spec/PROTOCOL-FACTS.md exists at that path,
+Next: 1) confirm protocol/current/spec/PROTOCOL-FACTS.md exists at that path,
 2) if it's missing, ask the human — do not substitute run-task.sh source
    reading for it, 3) do not proceed until unambiguous.
 ```

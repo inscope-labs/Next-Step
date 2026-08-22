@@ -14,4 +14,4 @@ _Install instructions will be added once `install/install.sh` is functional (Pha
 
 - [Architecture Overview](docs/architecture-overview.md)
 - [Security Model](docs/security-model.md)
-- [Protocol Spec](root/protocol/spec/)
+- [Protocol Spec](root/protocol/current/spec/)

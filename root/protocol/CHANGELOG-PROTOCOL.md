@@ -10,8 +10,9 @@ Next Step protocol v1.0 succeeds the retired ABX-STEP protocol, whose last
 version was v1.2.1. The onboarding chain (`next-step-onboarding.md`,
 `state-0.md` through `state-3.md`), `PROTOCOL-FACTS.md`, and the `demo/`
 scaffold were migrated from ABX-STEP v1.2.0 with naming updated throughout
-(no ABX-STEP references remain) and paths updated to this repo's flat
-`protocol/spec/` layout.
+(no ABX-STEP references remain) and paths updated to this repo's versioned
+`protocol/v1.0/spec/` layout, resolved through the `protocol/current`
+symlink.
 
 Carried forward unchanged from the ABX-STEP lineage:
 - Human-only, hard-gate authorization model.
@@ -38,11 +39,14 @@ New at v1.0, not present in the ABX-STEP lineage:
   one zipped task to its scope and parent action plan; the submitting
   agent sees only the receipt, never the action plan.
 
-Open items carried forward, not yet resolved:
-- Whether protocol content should live under versioned `protocol/vX.Y.Z/`
-  directories with an atomic `protocol/current` symlink (as ABX-STEP did),
-  or the current flat `protocol/spec/` layout. See
-  `docs/architecture-overview.md` §5.
+Decided at v1.0, not left open:
+- Protocol content is versioned from the start:
+  `root/protocol/v1.0/{spec,schemas}/`, with `root/protocol/current` as an
+  atomic symlink to the active version directory. All cross-references
+  within the onboarding chain resolve through `protocol/current/`, never a
+  hardcoded version number.
+
+Open items carried forward, still not resolved:
 - CLI command syntax for what were ABX-STEP's `run-task.sh`/`build-task.sh`
   shell entry points, pending the Go engine's actual subcommand design in
   Phase 4-5 of the build plan. The onboarding chain currently references

@@ -11,12 +11,11 @@ are for HOW; this file is for WHAT.
   The manifest fields, workspace model, and authorization model below were
   carried forward from that lineage rather than redesigned from scratch —
   see `docs/architecture-overview.md` for the full rationale.
-- Live entry point / versioned protocol directory layout
-  (`protocol/current` symlink vs. flat `protocol/spec/`) is an open
-  architectural question for this repo — not yet resolved, tracked in
-  `docs/architecture-overview.md` §5. This file describes the manifest and
-  authorization contract, which hold regardless of how that question
-  resolves.
+- Live entry point: `$NEXT_STEP_HOME/protocol/current` — a symlink to the
+  active versioned protocol directory (currently `protocol/v1.0/`). All
+  spec and schema paths in this document and the state files resolve
+  through `protocol/current/`, never a hardcoded version number, so a
+  future version flip only requires re-pointing the symlink atomically.
 
 ## Task package format
 

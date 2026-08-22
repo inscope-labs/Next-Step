@@ -1,6 +1,6 @@
 # STATE 2 — Live Interaction
 
-Use the scaffold folder confirmed in State 0's `protocol/spec/` listing (not a
+Use the scaffold folder confirmed in State 0's `protocol/current/spec/` listing (not a
 guessed name). Read its `README.md` for exact substitutions. Never invent
 a task.
 
@@ -44,10 +44,10 @@ the last. Concatenate to one temp file first, one clipboard write:
 H="${NEXT_STEP_HOME:-$HOME/next-step}"
 TMPFILE="$(mktemp)"
 {
-  echo "--- README.md ---"; cat "$H/protocol/spec/demo/README.md"
-  echo "--- task.manifest.demo ---"; cat "$H/protocol/spec/demo/task.manifest.demo"
-  echo "--- start.sh.demo ---"; cat "$H/protocol/spec/demo/start.sh.demo"
-  echo "--- verify.sh.demo ---"; cat "$H/protocol/spec/demo/verify.sh.demo"
+  echo "--- README.md ---"; cat "$H/protocol/current/spec/demo/README.md"
+  echo "--- task.manifest.demo ---"; cat "$H/protocol/current/spec/demo/task.manifest.demo"
+  echo "--- start.sh.demo ---"; cat "$H/protocol/current/spec/demo/start.sh.demo"
+  echo "--- verify.sh.demo ---"; cat "$H/protocol/current/spec/demo/verify.sh.demo"
 } > "$TMPFILE"
 cat "$TMPFILE" | "$H/bin/next-step-clipboard.sh"
 ```
@@ -56,7 +56,7 @@ cat "$TMPFILE" | "$H/bin/next-step-clipboard.sh"
 
 Fill the scaffold's `.demo` files per its `README.md` substitutions only,
 including `{{WORKSPACE_ID}}`. Follow the manifest fields and command
-sequence already confirmed in State 1 from `protocol/spec/PROTOCOL-FACTS.md`
+sequence already confirmed in State 1 from `protocol/current/spec/PROTOCOL-FACTS.md`
 -- `WORKSPACE_ID`, `WORKSPACE_NAME`, `WRITE_PATHS` in the manifest, then
 `build-task.sh` -> `--show` -> `--approve` -> `--run` -- don't re-derive it,
 don't inspect any script source:
@@ -96,7 +96,7 @@ alone proves nothing.
 State 2 OK. workspace=<WORKSPACE_ID> verified: <PASS/FAIL from the report>
 
 H="${NEXT_STEP_HOME:-$HOME/next-step}"
-cat "$H/protocol/spec/state-3.md" | "$H/bin/next-step-clipboard.sh"
+cat "$H/protocol/current/spec/state-3.md" | "$H/bin/next-step-clipboard.sh"
 ```
 
 ## Failure

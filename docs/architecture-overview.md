@@ -67,6 +67,15 @@ any window where a partially-updated protocol version could be read mid-flip.
 `root/protocol/CHANGELOG-PROTOCOL.md` tracks protocol-level (not engine-level)
 version history, starting at v1.0 as the successor to ABX-STEP protocol v1.2.1.
 
+**Implemented as of v1.0** (this was an open question through Phase 3; resolved
+before Phase 4): `root/protocol/v1.0/{spec,schemas}/` holds the actual content,
+and `root/protocol/current` is a symlink to `v1.0`. Every cross-reference inside
+the onboarding chain (`next-step-onboarding.md`, `state-0.md` through
+`state-3.md`, `PROTOCOL-FACTS.md`) resolves through `protocol/current/`, never
+a hardcoded version number — so a future version bump only requires adding
+`protocol/v1.1.0/` (or similar) and re-pointing the symlink, with no edits
+required to the chain's own path references.
+
 ## 6. Workspace model
 
 - A workspace claim is atomic (Go-native equivalent of the old `mkdir`-based

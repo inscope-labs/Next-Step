@@ -1,6 +1,6 @@
 # STATE 0 — Discovery & Inventory
 
-Find the install and list what's in it, including `protocol/spec/`,
+Find the install and list what's in it, including `protocol/current/spec/`,
 `workspace/`, and `sessions/`. Nothing else.
 
 ## Command
@@ -12,8 +12,8 @@ H="${NEXT_STEP_HOME:-$HOME/next-step}"
   if [ -d "$H" ]; then
     echo "candidate=$H"
     find "$H" -maxdepth 1 -mindepth 1 | sort
-    echo "--- protocol/spec/ ---"
-    find "$H/protocol/spec" -maxdepth 1 -mindepth 1 2>/dev/null | sort
+    echo "--- protocol/current/spec/ ---"
+    find "$H/protocol/current/spec" -maxdepth 1 -mindepth 1 2>/dev/null | sort
     echo "--- workspace/ ---"
     find "$H/workspace" -maxdepth 1 -mindepth 1 2>/dev/null | sort
     echo "--- sessions/ ---"
@@ -32,12 +32,12 @@ Reply:
 
 ```
 State 0 OK. candidate=<path>
-protocol/spec contents: <list what was found under protocol/spec/, verbatim>
+protocol/spec contents: <list what was found under protocol/current/spec/, verbatim>
 workspace contents: <list what was found under workspace/, verbatim>
 sessions contents: <list what was found under sessions/, verbatim>
 
 H="${NEXT_STEP_HOME:-$HOME/next-step}"
-cat "$H/protocol/spec/state-1.md" | "$H/bin/next-step-clipboard.sh"
+cat "$H/protocol/current/spec/state-1.md" | "$H/bin/next-step-clipboard.sh"
 ```
 
 ## Failure
