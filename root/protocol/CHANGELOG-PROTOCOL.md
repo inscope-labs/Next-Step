@@ -4,7 +4,12 @@ This tracks the **protocol** (onboarding chain, task/receipt/action-plan
 model, manifest contract) — not the `engine/` Go module's own version,
 which is tracked separately.
 
-## [1.0] — Unreleased
+## [1.0] — 2026-08-23
+
+Released as part of Next Step engine v1.0.0 (see top-level `CHANGELOG.md`).
+Protocol content is unchanged since the "Phase 5.5.0.5 correction" entry
+below — nothing in `root/protocol/v1.0/{spec,schemas}/` moved between then
+and this release.
 
 Next Step protocol v1.0 succeeds the retired ABX-STEP protocol, whose last
 version was v1.2.1. The onboarding chain (`next-step-onboarding.md`,
