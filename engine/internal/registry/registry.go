@@ -10,8 +10,11 @@
 //   - workspace/registry/<ID>/       existence is the claim
 //   - sessions/active                default-workspace pointer, human-set
 //
-// These are top-level under $NEXT_STEP_HOME, distinct from root/workspaces/
-// (plural, templates/docs/legacy reference material only).
+// All top-level under $NEXT_STEP_HOME's single root/workspace/ (singular)
+// directory, alongside committed reference material (templates/docs/legacy)
+// that lives there too. There is no separate root/workspaces/ (plural)
+// directory -- an earlier build-plan draft called for one; that was an
+// error, corrected in Phase 6.
 package registry
 
 import (

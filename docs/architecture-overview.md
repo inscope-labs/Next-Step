@@ -52,10 +52,10 @@ installed at `$NEXT_STEP_HOME` on a target machine. This means:
 - What you see in `root/` in the repo is exactly the payload the installer
   places on disk — no separate "packaging" transform between repo layout and
   install layout.
-- `root/protocol/`, `root/workspaces/`, `root/sessions/`, `root/bin/` map
+- `root/protocol/`, `root/workspace/`, `root/sessions/`, `root/bin/` map
   directly to their installed counterparts.
 - Runtime-generated content (live workspace state, `.task-seq`, active session
-  state) is git-ignored under `root/workspaces/` and `root/sessions/` but the
+  state) is git-ignored under `root/workspace/` and `root/sessions/` but the
   *directory structure* itself is committed, so a fresh install has the correct
   empty skeleton to write into.
 
@@ -99,11 +99,17 @@ required to the chain's own path references.
   earlier scaffold guess): `workspace/<ID>/` for live claimed instances
   (holding `inbox/tasks/approvals/receipts/logs/locks/files`),
   `workspace/registry/<ID>/` for the claim registry, `sessions/active` for
-  the default-workspace pointer. This is a *different* top-level directory
-  from `root/workspaces/` (plural, holding `templates/docs/legacy`
-  reference material only) — the two were conflated in this repo's early
-  scaffold and have since been split into `root/workspace/` (singular,
-  live registry) and `root/workspaces/` (plural, reference material).
+  the default-workspace pointer. All of this lives under one top-level
+  `root/workspace/` (singular) directory, alongside the committed
+  `templates/docs/legacy` reference material (see
+  `root/workspace/templates/workspace-skeleton/README.md`,
+  `root/workspace/docs/workspace-lifecycle.md`,
+  `root/workspace/legacy/README.md`). An earlier build-plan draft called
+  for a second, separate `root/workspaces/` (plural) directory to hold that
+  reference material — it briefly existed in this repo before Phase 6 was
+  corrected; there was never a real reason for the split, and it added a
+  second top-level dir to keep in sync with the repo↔install mirror in §4
+  for no benefit.
 
 ## 7. Engine package breakdown (`engine/internal/`)
 

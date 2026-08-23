@@ -4,21 +4,25 @@
 *.test
 *.out
 
-# Runtime-generated content — never commit live workspace or session state
-root/workspaces/*/
-!root/workspaces/templates/
-!root/workspaces/docs/
-!root/workspaces/legacy/
-
-# Live claimed-workspace instances and the atomic-claim registry (this is
-# distinct from root/workspaces/ above, which holds templates/docs/legacy
-# reference material, not live instances). Ground truth path per
-# root/protocol/v1.0/spec/PROTOCOL-FACTS.md: workspace/<ID>/,
-# workspace/registry/<ID>/.
+# root/workspace/ (singular) holds both runtime state and committed
+# reference material, side by side. There is no separate root/workspaces/
+# (plural) directory — an earlier build-plan draft called for one and it
+# briefly existed in this repo; that was an error, corrected here.
+#
+# Runtime-only, never committed: live claimed-workspace instances at
+# root/workspace/<ID>/, and the atomic-claim registry at
+# root/workspace/registry/<ID>/. Ground truth path per
+# root/protocol/v1.0/spec/PROTOCOL-FACTS.md.
+#
+# Committed reference material, not runtime state, despite living under
+# the same top-level dir: templates/, docs/, legacy/.
 root/workspace/*
 !root/workspace/registry/
 root/workspace/registry/*
 !root/workspace/registry/.gitkeep
+!root/workspace/templates/
+!root/workspace/docs/
+!root/workspace/legacy/
 
 # Default-workspace pointer file read by run-task.sh/build-task.sh when
 # --workspace is omitted (PROTOCOL-FACTS.md). Pure runtime state.
