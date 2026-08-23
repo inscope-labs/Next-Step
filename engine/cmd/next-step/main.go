@@ -71,7 +71,7 @@ Usage:
   next-step create-workspace --name <name> --purpose <purpose> [--creator <name>]
   next-step build-task [--workspace <ID>] <TASK_ID>
   next-step run-task --show <zip>
-  next-step run-task --approve <zip> [--approver <name>]
+  next-step run-task --approve [--approver <name>] <zip>
   next-step run-task <zip>
   next-step session set-active --workspace <ID>
   next-step session show-active
