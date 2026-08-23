@@ -1,0 +1,16 @@
+{
+  "_status": "non-functional placeholder — not read by any code path in v1.0",
+  "_purpose": "Marks the intended shape of a future sandbox execution profile for next-step-runner. See engine/internal/sandbox/doc.go and docs/security-model.md §5 for what remains genuinely undecided (container vs. gVisor vs. seccomp-based isolation, among others) before any field below is real.",
+  "schema_version": null,
+  "isolation": {
+    "technology": null,
+    "network_access": "none",
+    "filesystem_access": "ephemeral-only, no path back to true host per docs/security-model.md §1"
+  },
+  "resource_limits": {
+    "cpu": null,
+    "memory": null,
+    "wall_clock_timeout_seconds": null
+  },
+  "_note": "Every null field above is an open decision, not a default. Do not treat presence of this file as evidence that sandboxing is functional -- engine/internal/sandbox is a structural stub only as of Phase 6."
+}

@@ -1,0 +1,21 @@
+# Dockerfile.scratch — non-functional placeholder
+#
+# Marks where next-step-runner's sandboxed execution image will be built
+# once engine/internal/sandbox and cmd/next-step-runner have real logic
+# (post-v1.0, see docs/security-model.md §5 "Known open items"). Container
+# technology itself is not yet chosen — this file exists so the intended
+# location is visible in the tree from day one, not because a container
+# path is confirmed. If the eventual choice is gVisor, seccomp-based
+# isolation, or something else non-container, this file is replaced rather
+# than adapted.
+#
+# Do not build this. It is intentionally not a working image definition.
+
+FROM scratch
+
+# Placeholder — no ENTRYPOINT, no COPY. A real sandbox image would need,
+# at minimum: the next-step-runner binary (statically linked, matching the
+# repo's no-runtime-dependency distribution model), and nothing else —
+# scratch is the deliberate starting point precisely because the isolation
+# guarantee this package exists to provide depends on the image carrying
+# as little attack surface as possible.
