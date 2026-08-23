@@ -1,0 +1,35 @@
+name: CI
+
+# Builds and tests engine/ only -- CI has no dependency on the Oracle
+# Always Free VM runtime plane, and vice versa (docs/security-model.md §3).
+# Nothing else in this repo (root/, docs/, install/) is compiled.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: engine/go.mod
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./... -v

@@ -1,0 +1,101 @@
+name: Release
+
+# Cross-compiles both next-step and next-step-runner for the release
+# matrix and publishes binaries + checksums as GitHub Release assets only
+# -- never committed to the tree (see docs/architecture-overview.md §10).
+#
+# Asset naming is ground truth set by install/install.sh (Phase 8), since
+# this workflow came after it: next-step-<target> / next-step-runner-<target>
+# plus a "<same-name>.sha256" sidecar per binary. If this matrix or naming
+# ever changes, install.sh's platform-detection case block is the other
+# half of the contract and must change with it.
+#
+# next-step-runner ships here (so the two-binary trust split is visible in
+# every release from v1.0 onward) but is a structural stub as of v1.0 --
+# see engine/cmd/next-step-runner/main.go and docs/security-model.md §1.
+# install.sh never fetches it (docs/security-model.md §2 point 3); its
+# presence here is not a claim that it's functional.
+#
+# No dependency on the Oracle Always Free VM runtime plane, or vice versa
+# (docs/security-model.md §3) -- this workflow only builds, checksums, and
+# publishes; it never touches runtime state.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            goarm: ""
+            target: linux-amd64
+          - goos: linux
+            goarch: arm64
+            goarm: ""
+            target: linux-arm64
+          - goos: linux
+            goarch: arm
+            goarm: "7"
+            target: linux-arm-v7
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: engine/go.mod
+
+      - name: Cross-compile next-step and next-step-runner
+        working-directory: engine
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          GOARM: ${{ matrix.goarm }}
+          CGO_ENABLED: "0"
+        run: |
+          mkdir -p ../dist
+          go build -trimpath -o "../dist/next-step-${{ matrix.target }}" ./cmd/next-step
+          go build -trimpath -o "../dist/next-step-runner-${{ matrix.target }}" ./cmd/next-step-runner
+
+      - name: Checksum
+        working-directory: dist
+        run: |
+          sha256sum "next-step-${{ matrix.target }}" > "next-step-${{ matrix.target }}.sha256"
+          sha256sum "next-step-runner-${{ matrix.target }}" > "next-step-runner-${{ matrix.target }}.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.target }}
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: dist-*
+          merge-multiple: true
+
+      - name: List assets
+        run: ls -la dist/
+
+      - name: Create release and upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --repo "${{ github.repository }}" \
+            --title "${{ github.ref_name }}" \
+            --generate-notes \
+            dist/*
