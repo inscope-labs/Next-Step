@@ -172,6 +172,24 @@ is available.
   source build) and verifies its checksum before placing it on disk, so the
   installed binary's provenance is always a signed/checksummed release
   artifact, never a local compile.
+- **Release asset naming (ground truth, set by `install/install.sh` in
+  Phase 8, since `release.yml` doesn't exist yet as of Phase 8):**
+  `next-step-<target>` per platform, with a `<same-name>.sha256` checksum
+  sidecar published alongside it —
+  `next-step-linux-amd64`, `next-step-linux-arm64`, `next-step-linux-arm-v7`
+  (the last is `GOARM=7`, per the Phase 5.5.0.5 correction that the
+  architect's actual device is 32-bit Termux, not 64-bit). `next-step-runner`
+  is never published as one of these — see §3 point 3. Phase 9's
+  `release.yml` must produce exactly these asset names; if that matrix or
+  naming ever needs to change, `install/install.sh`'s platform-detection
+  `case` block is the other half of the contract and has to change with it.
+- Install script run location: `install/install.sh` is designed to be run
+  from inside a checked-out copy of this repository (a `git clone`, or the
+  source archive GitHub generates for a tagged release), not via
+  curl-pipe from an arbitrary location — it mirrors the checkout's own
+  `root/` directory onto `$NEXT_STEP_HOME` (per the repo↔install mirror
+  above) rather than fetching that payload separately, since none of it is
+  compiled and all of it is already sitting on disk beside the script.
 
 ## 11. What v1.0 explicitly does not include
 
